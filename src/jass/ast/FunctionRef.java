@@ -2,6 +2,8 @@ package jass.ast;
 
 import jass.ast.statement.ReturnStatement;
 
+import java.util.List;
+
 public class FunctionRef extends NativeFunctionRef {
     public final Variable[] localVariables;
     public final Statement[] statements;
@@ -58,6 +60,15 @@ public class FunctionRef extends NativeFunctionRef {
 
             if (statement instanceof ReturnStatement)
                 break;
+        }
+
+        for (Variable var : localVariables) {
+            if (var.isArray) {
+                List<Object> array = var.getValue();
+                array.clear();
+            } else {
+                var.setValue(null);
+            }
         }
 
         return returnValue;
