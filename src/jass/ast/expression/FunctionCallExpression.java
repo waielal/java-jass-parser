@@ -17,18 +17,18 @@ public class FunctionCallExpression extends Expression {
     public void checkRequirement() {
         function = JassHelper.getFunction(functionId);
 
-        if (arguments.length != function.arguments.length)
+        if (arguments.length != function.argumentVars.length)
             throw new RuntimeException("Argument length does not match. Expected: " +
-                    function.arguments.length + ", got: " + arguments.length);
+                    function.argumentVars.length + ", got: " + arguments.length);
 
         for (int i = 0; i < arguments.length; i++) {
             arguments[i].checkRequirement();
-            if ((arguments[i].evalType() != function.arguments[i].type())
-                    && !(arguments[i].evalType() == Type.INTEGER && function.arguments[i].type() == Type.REAL)
-                    && !(arguments[i].evalType() == Type.NOTHING && function.arguments[i].type().root() == Type.HANDLE)
+            if ((arguments[i].evalType() != function.argumentVars[i].type())
+                    && !(arguments[i].evalType() == Type.INTEGER && function.argumentVars[i].type() == Type.REAL)
+                    && !(arguments[i].evalType() == Type.NOTHING && function.argumentVars[i].type().root() == Type.HANDLE)
                     ) {
                 throw new RuntimeException("Argument type (" + i + ") does not match. " + functionId + " expected: " +
-                        function.arguments[i].type() + ", got: " + arguments[i].evalType());
+                        function.argumentVars[i].type() + ", got: " + arguments[i].evalType());
             }
         }
     }

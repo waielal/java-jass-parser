@@ -45,7 +45,7 @@ public class FunctionRef extends NativeFunctionRef {
     @Override
     public Object eval(Argument... arguments) {
         for (int i = 0; i < arguments.length; i++) {
-            this.arguments[i].setValue(arguments[i].value);
+            argumentVars[i].setValue(arguments[i].value);
         }
 
         JassHelper.activeFunction = this;

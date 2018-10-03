@@ -6,12 +6,12 @@ public class NativeFunctionRef implements PreloadTypeReference {
     public final boolean isConst;
     public final Identifier name;
     public final Identifier returnTypeId;
-    public final Variable[] arguments;
+    public final Variable[] argumentVars;
     protected Type returnType;
 
 
     public NativeFunctionRef(FunctionDef def, boolean isConst) {
-        this.arguments = def.arguments;
+        this.argumentVars = def.argumentVars;
         this.returnTypeId = def.returnTypeId;
         this.name = def.name;
         this.isConst = isConst;
@@ -21,7 +21,7 @@ public class NativeFunctionRef implements PreloadTypeReference {
     public void preloadTypeReference() {
         returnType = JassHelper.getType(returnTypeId);
 
-        for (Variable argument : arguments) {
+        for (Variable argument : argumentVars) {
             argument.preloadTypeReference();
         }
     }
@@ -46,12 +46,12 @@ public class NativeFunctionRef implements PreloadTypeReference {
 
     public static class FunctionDef {
         public final Identifier name;
-        public final Variable[] arguments;
+        public final Variable[] argumentVars;
         public final Identifier returnTypeId;
 
-        public FunctionDef(Identifier name, Variable[] arguments, Identifier returnTypeId) {
+        public FunctionDef(Identifier name, Variable[] argumentVars, Identifier returnTypeId) {
             this.name = name;
-            this.arguments = arguments;
+            this.argumentVars = argumentVars;
             this.returnTypeId = returnTypeId;
         }
     }

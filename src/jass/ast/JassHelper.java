@@ -16,9 +16,9 @@ public class JassHelper {
             }
 
         if (var == null && activeFunction != null)
-            for (Variable argument : activeFunction.arguments) {
-                if (argument.name.equals(variableId)) {
-                    var = argument;
+            for (Variable argumentVar : activeFunction.argumentVars) {
+                if (argumentVar.name.equals(variableId)) {
+                    var = argumentVar;
                     break;
                 }
             }
