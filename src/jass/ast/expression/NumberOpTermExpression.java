@@ -36,11 +36,11 @@ public abstract class NumberOpTermExpression extends Expression {
 
             public Object eval() {
                 if (evalType() == Type.INTEGER)
-                    return (int) expr1.eval() + (int) expr2.eval();
+                    return ((Number) expr1.eval()).intValue() + ((Number) expr2.eval()).intValue();
                 else if (evalType() == Type.STRING)
                     return (String) expr1.eval() + expr2.eval();
 
-                return (double) expr1.eval() + (double) expr2.eval();
+                return ((Number) expr1.eval()).doubleValue() + ((Number) expr2.eval()).doubleValue();
             }
 
             public String toString() {
@@ -49,26 +49,12 @@ public abstract class NumberOpTermExpression extends Expression {
         };
     }
 
-    public static NumberOpTermExpression sub(Expression expr1, Expression expr2) {
-        return new NumberOpTermExpression(expr1, expr2) {
-            public Object eval() {
-                if (evalType() == Type.INTEGER)
-                    return (int) expr1.eval() - (int) expr2.eval();
-                return (double) expr1.eval() - (double) expr2.eval();
-            }
-
-            public String toString() {
-                return "(" + expr1 + " - " + expr2 + ")";
-            }
-        };
-    }
-
     public static NumberOpTermExpression mul(Expression expr1, Expression expr2) {
         return new NumberOpTermExpression(expr1, expr2) {
             public Object eval() {
                 if (evalType() == Type.INTEGER)
-                    return (int) expr1.eval() * (int) expr2.eval();
-                return (double) expr1.eval() * (double) expr2.eval();
+                    return ((Number) expr1.eval()).intValue() * ((Number) expr2.eval()).intValue();
+                return ((Number) expr1.eval()).doubleValue() * ((Number) expr2.eval()).doubleValue();
             }
 
             public String toString() {
@@ -81,8 +67,8 @@ public abstract class NumberOpTermExpression extends Expression {
         return new NumberOpTermExpression(expr1, expr2) {
             public Object eval() {
                 if (evalType() == Type.INTEGER)
-                    return (int) expr1.eval() / (int) expr2.eval();
-                return (double) expr1.eval() / (double) expr2.eval();
+                    return ((Number) expr1.eval()).intValue() / ((Number) expr2.eval()).intValue();
+                return ((Number) expr1.eval()).doubleValue() / ((Number) expr2.eval()).doubleValue();
             }
 
             public String toString() {
@@ -91,7 +77,8 @@ public abstract class NumberOpTermExpression extends Expression {
         };
     }
 
-    final Expression expr1, expr2;
+    public final Expression expr1;
+    public final Expression expr2;
 
     NumberOpTermExpression(Expression expr1, Expression expr2) {
         this.expr1 = expr1;

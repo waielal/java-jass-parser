@@ -1,7 +1,7 @@
 package jass.ast.statement;
 
 import jass.ast.*;
-import jass.ast.expression.ConstantNullExpression;
+import jass.ast.expression.ConstantExpression.ConstantNullExpression;
 
 public class ReturnStatement extends Statement {
     public final Expression returnExpression;

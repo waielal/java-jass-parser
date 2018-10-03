@@ -15,7 +15,7 @@ public class DebugStatement extends Statement {
         statement.checkRequirement();
 
         if (!(statement instanceof SetStatement) && !(statement instanceof SetArrayStatement) &&
-                !(statement instanceof FunctionCallStatement) && !(statement instanceof IfThenElseStatement) &&
+                !(statement instanceof FunctionCallStatement) && !(statement instanceof ConditionalStatement) &&
                 !(statement instanceof LoopStatement)) {
             throw new RuntimeException(statement.getClass().getName() + " can not be debugged!");
         }

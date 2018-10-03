@@ -30,7 +30,7 @@ public class NativeFunctionRef implements PreloadTypeReference {
         return returnType;
     }
 
-    public Object eval(Argument[] arguments) {
+    public Object eval(Argument... arguments) {
         throw new NotImplementedException();
     }
 

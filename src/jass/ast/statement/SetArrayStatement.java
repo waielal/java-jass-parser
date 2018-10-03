@@ -6,7 +6,8 @@ import java.util.List;
 
 public class SetArrayStatement extends Statement {
     public final Identifier variableArrayId;
-    final Expression indexExpr, assignExpr;
+    public final Expression indexExpr;
+    public final Expression assignExpr;
 
     private Variable variable;
 

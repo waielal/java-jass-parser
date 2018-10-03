@@ -4,10 +4,10 @@ import jass.ast.Expression;
 import jass.ast.Statement;
 import jass.ast.Type;
 
-public class IfThenElseStatement extends Statement {
+public class ConditionalStatement extends Statement {
     public final Branch[] branches;
 
-    public IfThenElseStatement(Branch[] branches) {
+    public ConditionalStatement(Branch[] branches) {
         this.branches = branches;
     }
 
@@ -44,7 +44,6 @@ public class IfThenElseStatement extends Statement {
     }
 
     public static class Branch extends Statement {
-
         public final Expression expr;
         public final Statement[] statements;
 

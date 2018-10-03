@@ -1,7 +1,9 @@
-
 import jass.JassLexer;
 import jass.JassParser;
+import jass.ast.FunctionRef;
 import jass.ast.JassInstance;
+import jass.ast.NativeFunctionRef.Argument;
+import jass.ast.Type;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +33,29 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void test() {
+        String content =
+            "function A takes integer a, real b returns real " +
+                "local real c = a * a + b * b " +
+                "local integer i " +
+                "set i = 0 " +
+                "loop set c = c + c " +
+                    "set i = i + 1 " +
+                    "exitwhen i > 1 " +
+                "endloop " +
+                "return c " +
+            "endfunction";
+
+        JassLexer lexer = new JassLexer(content);
+        JassParser parser = new JassParser();
+        JassInstance instance = parser.parse(lexer);
+
+        FunctionRef refA = instance.functions.get("A");
+        Object res = refA.eval(new Argument(Type.INTEGER, 1), new Argument(Type.INTEGER, 1));
+
+        System.out.println("(" + refA.returnType() + ") " + res);
     }
 
     public static String loadFile(String file) throws IOException {

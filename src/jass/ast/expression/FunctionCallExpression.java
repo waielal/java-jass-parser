@@ -21,12 +21,12 @@ public class FunctionCallExpression extends Expression {
             throw new RuntimeException("Argument length does not match. Expected: " +
                     function.arguments.length + ", got: " + arguments.length);
 
-        if (function.returnType() == Type.NOTHING)
-            throw new RuntimeException("This function does not return anything!");
-
         for (int i = 0; i < arguments.length; i++) {
             arguments[i].checkRequirement();
-            if ((arguments[i].evalType() != function.arguments[i].type()) && !(arguments[i].evalType() == Type.INTEGER && function.arguments[i].type() == Type.REAL)) {
+            if ((arguments[i].evalType() != function.arguments[i].type())
+                    && !(arguments[i].evalType() == Type.INTEGER && function.arguments[i].type() == Type.REAL)
+                    && !(arguments[i].evalType() == Type.NOTHING && function.arguments[i].type().root() == Type.HANDLE)
+                    ) {
                 throw new RuntimeException("Argument type (" + i + ") does not match. " + functionId + " expected: " +
                         function.arguments[i].type() + ", got: " + arguments[i].evalType());
             }
@@ -53,5 +53,4 @@ public class FunctionCallExpression extends Expression {
     public String toString() {
         return functionId + "(...)"; //TODO
     }
-
 }

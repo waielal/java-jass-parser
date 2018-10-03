@@ -21,10 +21,6 @@ public class FunctionRef extends NativeFunctionRef {
 
         JassHelper.activeFunction = this;
 
-        for (Variable argument : arguments) {
-            argument.preloadTypeReference();
-        }
-
         for (Variable localVariable : localVariables) {
             localVariable.preloadTypeReference();
         }
@@ -47,15 +43,21 @@ public class FunctionRef extends NativeFunctionRef {
     }
 
     @Override
-    public Object eval(Argument[] arguments) {
+    public Object eval(Argument... arguments) {
+        for (int i = 0; i < arguments.length; i++) {
+            this.arguments[i].setValue(arguments[i].value);
+        }
+
+        JassHelper.activeFunction = this;
         for (Variable var : localVariables) {
             var.initializeValue();
         }
+        JassHelper.activeFunction = null;
 
         for (Statement statement : statements) {
             statement.eval();
 
-            if (returnType != null)
+            if (returnValue != null)
                 break;
 
             if (statement instanceof ReturnStatement)

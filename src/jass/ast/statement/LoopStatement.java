@@ -12,15 +12,16 @@ public class LoopStatement extends Statement {
 
     @Override
     public void checkRequirement() {
-        /*
-        boolean atLeastOneExitWhenStatement = false;
+
+//        boolean atLeastOneExitWhenStatement = false;
         for (Statement statement : statements) {
             statement.checkRequirement();
 
-            if(statement instanceof ExitWhenStatement)
-                atLeastOneExitWhenStatement = true;
+//            if(statement instanceof ExitWhenStatement)
+//                atLeastOneExitWhenStatement = true;
         }
 
+        /*
         if (!atLeastOneExitWhenStatement) {
             //throw new RuntimeException("Loop has to have at least one exitwhen statement!");
             System.err.println("Warning: Loop has to have at least one exitwhen statement!");
