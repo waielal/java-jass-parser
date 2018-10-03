@@ -47,3 +47,6 @@ out/
 
 # Windows shortcuts
 *.lnk
+
+# Custom
+ignore/
