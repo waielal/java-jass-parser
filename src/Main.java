@@ -1,6 +1,7 @@
 import jass.JassLexer;
 import jass.JassParser;
 import jass.ast.FunctionRef;
+import jass.ast.JassHelper;
 import jass.ast.JassInstance;
 import jass.ast.NativeFunctionRef.Argument;
 import jass.ast.Type;
@@ -37,8 +38,12 @@ public class Main {
 
     public static void test() {
         String content =
+            "function B takes real a returns real " +
+                "return a * a " +
+            "endfunction "+
+
             "function A takes integer a, real b returns real " +
-                "local real c = a * a + b * b " +
+                "local real c = B(a) + B(b) " +
                 "local integer i " +
                 "set i = 0 " +
                 "loop set c = c + c " +
@@ -51,6 +56,7 @@ public class Main {
         JassLexer lexer = new JassLexer(content);
         JassParser parser = new JassParser();
         JassInstance instance = parser.parse(lexer);
+        JassHelper.instance = instance;
 
         FunctionRef refA = instance.functions.get("A");
         Object res = refA.eval(new Argument(Type.INTEGER, 1), new Argument(Type.INTEGER, 1));
