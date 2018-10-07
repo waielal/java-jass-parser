@@ -1,16 +1,16 @@
 package jass.ast.expression;
 
-import jass.ast.Expression;
-import jass.ast.Type;
+import jass.ast.JassInstance;
+import jass.ast.declaration.Type;
 
-public abstract class ConstantExpression<T> extends Expression {
+public abstract class ConstantExpression<T> implements Expression {
     public final T value;
 
     private ConstantExpression(T value) {
         this.value = value;
     }
 
-    public void checkRequirement() {
+    public void checkRequirement(JassInstance instance) {
     }
 
     public Object eval() {

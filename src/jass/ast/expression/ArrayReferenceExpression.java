@@ -1,24 +1,26 @@
 package jass.ast.expression;
 
 import jass.ast.*;
+import jass.ast.declaration.Type;
+import jass.ast.declaration.Variable;
 
 import java.util.List;
 
-public class ArrayReferenceExpression extends Expression {
-    public final Identifier variableArrayId;
+public class ArrayReferenceExpression implements Expression {
+    public final String variableArrayId;
     public final Expression indexExpr;
-    private Variable variable;
+    public Variable variable;
 
-    public ArrayReferenceExpression(Identifier variableArrayId, Expression indexExpr) {
+    public ArrayReferenceExpression(String variableArrayId, Expression indexExpr) {
         this.variableArrayId = variableArrayId;
         this.indexExpr = indexExpr;
     }
 
     @Override
-    public void checkRequirement() {
-        variable = JassHelper.getVariable(variableArrayId);
+    public void checkRequirement(JassInstance instance) {
+        variable = instance.getVariable(variableArrayId);
 
-        indexExpr.checkRequirement();
+        indexExpr.checkRequirement(instance);
 
         if (!variable.isArray)
             throw new RuntimeException(variable.name + " is not an array!");

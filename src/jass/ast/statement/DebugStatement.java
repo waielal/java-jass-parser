@@ -1,9 +1,8 @@
 package jass.ast.statement;
 
-import jass.ast.JassHelper;
-import jass.ast.Statement;
+import jass.ast.JassInstance;
 
-public class DebugStatement extends Statement {
+public class DebugStatement implements Statement {
     public final Statement statement;
 
     public DebugStatement(Statement statement) {
@@ -11,8 +10,8 @@ public class DebugStatement extends Statement {
     }
 
     @Override
-    public void checkRequirement() {
-        statement.checkRequirement();
+    public void checkRequirement(JassInstance instance) {
+        statement.checkRequirement(instance);
 
         if (!(statement instanceof SetStatement) && !(statement instanceof SetArrayStatement) &&
                 !(statement instanceof FunctionCallStatement) && !(statement instanceof ConditionalStatement) &&
@@ -22,9 +21,9 @@ public class DebugStatement extends Statement {
     }
 
     @Override
-    public void eval() {
-        if (JassHelper.isDebug()) {
-            statement.eval();
+    public void run() {
+        if (JassInstance.isDebug()) {
+            statement.run();
         }
     }
 

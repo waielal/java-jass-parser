@@ -1,44 +1,70 @@
 package jass.ast;
 
+import com.sun.istack.internal.NotNull;
+import jass.ast.declaration.FunctionRef;
+import jass.ast.declaration.NativeFunctionRef;
+import jass.ast.declaration.Variable;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class JassInstance {
-    public final Map<String, Type> types = new LinkedHashMap<>();
     public final Map<String, Variable> globals = new LinkedHashMap<>();
-    public final Map<String, Variable> global_const = new LinkedHashMap<>();
-    public final Map<String, FunctionRef> functions = new LinkedHashMap<>();
-    public final Map<String, NativeFunctionRef> natives = new LinkedHashMap<>();
+    public final Map<String, NativeFunctionRef> functions = new LinkedHashMap<>();
 
-    public void init() {
-        JassHelper.instance = this;
+    public FunctionRef activeFunction;
 
-        types.put(Type.NOTHING.name.id, Type.NOTHING);
-        types.put(Type.INTEGER.name.id, Type.INTEGER);
-        types.put(Type.REAL.name.id, Type.REAL);
-        types.put(Type.BOOLEAN.name.id, Type.BOOLEAN);
-        types.put(Type.STRING.name.id, Type.STRING);
-        types.put(Type.HANDLE.name.id, Type.HANDLE);
-        types.put(Type.CODE.name.id, Type.CODE);
-
-        for (Type type : types.values())
-            type.preloadTypeReference();
-
-        for (Variable var : global_const.values())
-            var.preloadTypeReference();
-
-        for (Variable var : globals.values())
-            var.preloadTypeReference();
-
-        for (NativeFunctionRef ref : natives.values())
-            ref.preloadTypeReference();
+    public static boolean isDebug() {
+        return true;
+    }
 
 
-        for (FunctionRef ref : functions.values()) {
-            ref.preloadTypeReference();
-            ref.checkRequirement();
+    @NotNull
+    public Variable getVariable(String variableId) {
+        return getVariable(variableId, activeFunction);
+    }
+
+    @NotNull
+    public Variable getVariable(String variableId, FunctionRef activeFunction) {
+        Variable var = null;
+
+        if (activeFunction != null) {
+            for (Variable localVariable : activeFunction.localVariables) {
+                if (localVariable.name.equals(variableId)) {
+                    var = localVariable;
+                    break;
+                }
+            }
         }
 
-        JassHelper.instance = null;
+        if (var == null && activeFunction != null) {
+            for (Variable argumentVar : activeFunction.argumentVars) {
+                if (argumentVar.name.equals(variableId)) {
+                    var = argumentVar;
+                    break;
+                }
+            }
+        }
+
+        if (var == null) {
+            var = globals.get(variableId);
+        }
+
+        if (var == null) {
+            throw new RuntimeException("Variable '" + variableId + "' was not declared before this line!");
+        }
+
+        return var;
+    }
+
+    @NotNull
+    public NativeFunctionRef getFunction(String functionId) {
+        NativeFunctionRef ref = functions.get(functionId);
+
+        if (ref == null) {
+            throw new RuntimeException("Function '" + functionId + "' was not declared before this line!");
+        }
+
+        return ref;
     }
 }

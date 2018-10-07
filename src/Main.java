@@ -56,11 +56,10 @@ public class Main {
         JassLexer lexer = new JassLexer(content);
         JassParser parser = new JassParser();
         JassInstance instance = parser.parse(lexer);
-        JassHelper.instance = instance;
 
-        FunctionRef refA = instance.functions.get("A");
+
+        NativeFunctionRef refA = instance.functions.get("A");
         Object res = refA.eval(new Argument(Type.INTEGER, 1), new Argument(Type.INTEGER, 1));
-
         System.out.println("(" + refA.returnType() + ") " + res);
     }
 

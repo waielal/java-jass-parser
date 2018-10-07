@@ -1,8 +1,8 @@
 package jass.ast.statement;
 
-import jass.ast.Statement;
+import jass.ast.JassInstance;
 
-public class LoopStatement extends Statement {
+public class LoopStatement implements Statement {
     public final Statement[] statements;
 
     public LoopStatement(Statement[] statements) {
@@ -11,30 +11,18 @@ public class LoopStatement extends Statement {
 
 
     @Override
-    public void checkRequirement() {
-
-//        boolean atLeastOneExitWhenStatement = false;
+    public void checkRequirement(JassInstance instance) {
         for (Statement statement : statements) {
-            statement.checkRequirement();
-
-//            if(statement instanceof ExitWhenStatement)
-//                atLeastOneExitWhenStatement = true;
+            statement.checkRequirement(instance);
         }
-
-        /*
-        if (!atLeastOneExitWhenStatement) {
-            //throw new RuntimeException("Loop has to have at least one exitwhen statement!");
-            System.err.println("Warning: Loop has to have at least one exitwhen statement!");
-        }
-        */
     }
 
     @Override
-    public void eval() {
+    public void run() {
         OuterLoop:
         while (true) {
             for (Statement statement : statements) {
-                statement.eval();
+                statement.run();
 
                 if (statement instanceof ExitWhenStatement && ((ExitWhenStatement) statement).shouldBreak())
                     break OuterLoop;

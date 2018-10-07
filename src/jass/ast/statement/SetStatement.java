@@ -1,23 +1,25 @@
 package jass.ast.statement;
 
 import jass.ast.*;
+import jass.ast.declaration.Variable;
+import jass.ast.expression.Expression;
 
-public class SetStatement extends Statement {
-    public final Identifier variableId;
+public class SetStatement implements Statement {
+    public final String variableId;
     public final Expression expr;
 
-    private Variable variable;
+    public Variable variable;
 
-    public SetStatement(Identifier variableId, Expression expr) {
+    public SetStatement(String variableId, Expression expr) {
         this.variableId = variableId;
         this.expr = expr;
     }
 
     @Override
-    public void checkRequirement() {
-        expr.checkRequirement();
+    public void checkRequirement(JassInstance instance) {
+        expr.checkRequirement(instance);
 
-        variable = JassHelper.getVariable(variableId);
+        variable = instance.getVariable(variableId);
 
         if (variable.isArray)
             throw new RuntimeException(variable.name + " is an array!");
@@ -30,7 +32,7 @@ public class SetStatement extends Statement {
     }
 
     @Override
-    public void eval() {
+    public void run() {
         variable.setValue(expr.eval());
     }
 

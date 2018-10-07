@@ -1,10 +1,10 @@
 package jass.ast.statement;
 
-import jass.ast.Expression;
-import jass.ast.Statement;
-import jass.ast.Type;
+import jass.ast.JassInstance;
+import jass.ast.expression.Expression;
+import jass.ast.declaration.Type;
 
-public class ConditionalStatement extends Statement {
+public class ConditionalStatement implements Statement {
     public final Branch[] branches;
 
     public ConditionalStatement(Branch[] branches) {
@@ -12,17 +12,17 @@ public class ConditionalStatement extends Statement {
     }
 
     @Override
-    public void checkRequirement() {
+    public void checkRequirement(JassInstance instance) {
         for (Branch branch : branches) {
-            branch.checkRequirement();
+            branch.checkRequirement(instance);
         }
     }
 
     @Override
-    public void eval() {
+    public void run() {
         for (Branch branch : branches) {
             if ((boolean) branch.expr.eval()) {
-                branch.eval();
+                branch.run();
                 break;
             }
         }
@@ -43,7 +43,7 @@ public class ConditionalStatement extends Statement {
         return s + "endif";
     }
 
-    public static class Branch extends Statement {
+    public static class Branch implements Statement {
         public final Expression expr;
         public final Statement[] statements;
 
@@ -53,22 +53,22 @@ public class ConditionalStatement extends Statement {
         }
 
         @Override
-        public void checkRequirement() {
-            expr.checkRequirement();
+        public void checkRequirement(JassInstance instance) {
+            expr.checkRequirement(instance);
 
             if (expr.evalType() != Type.BOOLEAN) {
                 throw new RuntimeException("The provided expression doesn't return a Boolean");
             }
 
             for (Statement statement : statements) {
-                statement.checkRequirement();
+                statement.checkRequirement(instance);
             }
         }
 
         @Override
-        public void eval() {
+        public void run() {
             for (Statement statement : statements) {
-                statement.eval();
+                statement.run();
 
                 if (statement instanceof ReturnStatement)
                     break;

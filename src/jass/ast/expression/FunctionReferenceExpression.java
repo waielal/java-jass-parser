@@ -1,19 +1,21 @@
 package jass.ast.expression;
 
 import jass.ast.*;
+import jass.ast.declaration.NativeFunctionRef;
+import jass.ast.declaration.Type;
 
-public class FunctionReferenceExpression extends Expression {
-    public final Identifier functionId;
-    private NativeFunctionRef function;
+public class FunctionReferenceExpression implements Expression {
+    public final String functionId;
+    public NativeFunctionRef function;
 
-    public FunctionReferenceExpression(Identifier functionId) {
+    public FunctionReferenceExpression(String functionId) {
         this.functionId = functionId;
     }
 
 
     @Override
-    public void checkRequirement() {
-        function = JassHelper.getFunction(functionId);
+    public void checkRequirement(JassInstance instance) {
+        function = instance.getFunction(functionId);
     }
 
     @Override

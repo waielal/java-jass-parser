@@ -1,14 +1,16 @@
 package jass.ast.statement;
 
 import jass.ast.*;
+import jass.ast.declaration.FunctionRef;
 import jass.ast.expression.ConstantExpression.ConstantNullExpression;
+import jass.ast.expression.Expression;
 
-public class ReturnStatement extends Statement {
+public class ReturnStatement implements Statement {
     public final Expression returnExpression;
-    public final Identifier functionId;
-    private FunctionRef function;
+    public final String functionId;
+    public FunctionRef function;
 
-    public ReturnStatement(Expression returnExpression, Identifier functionId) {
+    public ReturnStatement(Expression returnExpression, String functionId) {
         if (returnExpression == null)
             this.returnExpression = new ConstantNullExpression();
         else
@@ -17,18 +19,14 @@ public class ReturnStatement extends Statement {
     }
 
     @Override
-    public void checkRequirement() {
-        returnExpression.checkRequirement();
+    public void checkRequirement(JassInstance instance) {
+        returnExpression.checkRequirement(instance);
 
         if (functionId == null) {
             throw new RuntimeException("Function identifier not set!");
         }
 
-        function = (FunctionRef) JassHelper.getFunction(functionId);
-
-        if (function == null) {
-            throw new RuntimeException("Could not retrieve function reference from identifier \"" + functionId + "\"!");
-        }
+        function = (FunctionRef) instance.getFunction(functionId);
 
         if (function.returnType() != returnExpression.evalType()) {
             throw new RuntimeException("Wrong type returned. Expected: " +
@@ -37,7 +35,7 @@ public class ReturnStatement extends Statement {
     }
 
     @Override
-    public void eval() {
+    public void run() {
         function.setReturnValue(returnExpression.eval());
     }
 

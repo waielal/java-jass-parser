@@ -1,41 +1,37 @@
-package jass.ast;
+package jass.ast.declaration;
 
+import jass.ast.JassInstance;
 import jass.ast.statement.ReturnStatement;
+import jass.ast.statement.Statement;
 
 import java.util.List;
 
 public class FunctionRef extends NativeFunctionRef {
     public final Variable[] localVariables;
     public final Statement[] statements;
-    private Object returnValue = null;
 
-    public FunctionRef(FunctionDef def, boolean isConst, Variable[] localVariables, Statement[] statements) {
-        super(def, isConst);
+    public Object returnValue = null;
+
+    public FunctionRef(String name, Variable[] argumentVars, String returnTypeId, boolean isConst, Variable[] localVariables, Statement[] statements) {
+        super(name, argumentVars, returnTypeId, isConst);
         this.localVariables = localVariables;
         this.statements = statements;
     }
 
-    @Override
-    public void preloadTypeReference() {
-        super.preloadTypeReference();
+    public void checkRequirement(JassInstance instance) {
+        super.checkRequirement(instance);
 
-        JassHelper.activeFunction = this;
+        instance.activeFunction = this;
 
-        for (Variable localVariable : localVariables) {
-            localVariable.preloadTypeReference();
+        for (Variable v : localVariables) {
+            v.checkRequirement(instance);
         }
-
-        JassHelper.activeFunction = null;
-    }
-
-    public void checkRequirement() {
-        JassHelper.activeFunction = this;
 
         for (Statement s : statements) {
-            s.checkRequirement();
+            s.checkRequirement(instance);
         }
 
-        JassHelper.activeFunction = null;
+        instance.activeFunction = null;
     }
 
     public void setReturnValue(Object returnValue) {
@@ -48,20 +44,20 @@ public class FunctionRef extends NativeFunctionRef {
             argumentVars[i].setValue(arguments[i].value);
         }
 
-        JassHelper.activeFunction = this;
         for (Variable var : localVariables) {
             var.initializeValue();
         }
-        JassHelper.activeFunction = null;
 
         for (Statement statement : statements) {
-            statement.eval();
+            statement.run();
 
-            if (returnValue != null)
+            if (returnValue != null) {
                 break;
+            }
 
-            if (statement instanceof ReturnStatement)
+            if (statement instanceof ReturnStatement) {
                 break;
+            }
         }
 
         for (Variable var : localVariables) {

@@ -10,7 +10,9 @@ import java.util.regex.Pattern;
  * A Lexer splits the source file into an array of elemental tokens
  */
 public class JassLexer {
-    public String[] tokens;
+    public List<String> tokens = new ArrayList<>();
+    public List<Location> locations = new ArrayList<>();
+
     private int pos = 0;
     private int cnt_peeks = 0;
     private int last_pos = 0;
@@ -20,7 +22,7 @@ public class JassLexer {
 
         String r = "" +
                 //numbers
-                "[1-9][0-9]*"+
+                "\\n|[1-9][0-9]*"+
                 "|(\\$|0[xX])[0-9a-fA-F]+" +
                 "|[0-9]+\\.[0-9]*|\\.[0-9]+" +
                 "|0[0-7]*"+
@@ -48,14 +50,20 @@ public class JassLexer {
         Pattern p = Pattern.compile(r);
         Matcher m = p.matcher(input);
 
-        List<String> local = new ArrayList<>();
+        int row = 1;
+        int col_offset = 0;
+        while (m.find()) {
+            String s = m.group(0);
 
-        while (m.find())
-            local.add(m.group(0));
+            if(s.equals("\n")) {
+                col_offset = m.end(0);
+                row++;
+                continue;
+            }
 
-
-        this.tokens = new String[local.size()];
-        local.toArray(this.tokens);
+            this.locations.add(new Location(row, m.start(0)-col_offset+1, m.end(0)-m.start(0)));
+            this.tokens.add(s);
+        }
     }
 
     private static String remove_comments(String input) {
@@ -68,8 +76,7 @@ public class JassLexer {
             }
         }
 
-        //noinspection ConstantConditions
-        return Arrays.stream(a).reduce((s, s2) -> s2.trim().equals("") ? s : (s + "\n" + s2)).get().trim();
+        return Arrays.stream(a).reduce((s, s2) -> s2.trim().equals("") ? s : (s + "\n" + s2)).orElse("");
     }
 
     String peek() {
@@ -78,20 +85,23 @@ public class JassLexer {
             this.cnt_peeks = 0;
         }
         if (++this.cnt_peeks > 100) {
-            throw new RuntimeException("stuck");
+            Location l = getLocation();
+            throw new RuntimeException("stuck at line " +  l.row + ":" + l.start);
         }
         if (!this.hasMore()) {
             throw new RuntimeException("Requesting more tokens when eof reached");
         }
-        return this.tokens[this.pos];
+        return this.tokens.get(this.pos);
     }
 
     String next() {
-        return this.tokens[this.pos++];
+        //Location l = getLocation();
+        //System.out.println("'"+peek()+"' at line " +  l.row + ":" + l.start + " ("+l.length+")");
+        return this.tokens.get(this.pos++);
     }
 
     boolean hasMore() {
-        return this.pos < this.tokens.length;
+        return this.pos < this.tokens.size();
     }
 
     /**
@@ -126,9 +136,27 @@ public class JassLexer {
 
     void expect(String token) {
         if (!this.peek().equals(token)) {
-            throw new RuntimeException("'" + token + "' expected, '" + this.peek() + "' found");
+            Location l = getLocation();
+            throw new RuntimeException("'" + token + "' expected, '" + this.peek() + "' found at line " +  l.row + ":" + l.start);
         } else {
             this.next();
+        }
+    }
+
+    Location getLocation() {
+        return getLocation(0);
+    }
+
+    Location getLocation(int offset) {
+        return locations.get(this.pos + offset);
+    }
+
+    public static class Location {
+        public final int row, start, length;
+        public Location(int row, int start, int length) {
+            this.row = row;
+            this.start = start;
+            this.length = length;
         }
     }
 }
