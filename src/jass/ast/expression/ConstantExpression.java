@@ -1,68 +1,32 @@
 package jass.ast.expression;
 
-import jass.ast.JassInstance;
 import jass.ast.declaration.Type;
 
-public abstract class ConstantExpression<T> implements Expression {
+public class ConstantExpression<T> extends Expression {
     public final T value;
 
-    private ConstantExpression(T value) {
+    private ConstantExpression(T value, Type type) {
         this.value = value;
+        this.type = type;
     }
 
-    public void checkRequirement(JassInstance instance) {
+    public static ConstantExpression<Void> constNull() {
+        return new ConstantExpression<>(null, Type.NOTHING);
     }
 
-    public Object eval() {
-        return value;
+    public static ConstantExpression<Boolean> constBool(Boolean value) {
+        return new ConstantExpression<>(value, Type.BOOLEAN);
     }
 
-    public String toString() {
-        return String.valueOf(value);
+    public static ConstantExpression<Integer> constInt(Integer value) {
+        return new ConstantExpression<>(value, Type.INTEGER);
     }
 
-    public static class ConstantNullExpression extends ConstantExpression<Void> {
-        public ConstantNullExpression() {
-            super(null);
-        }
-        public Type evalType() {
-            return Type.NOTHING;
-        }
+    public static ConstantExpression<Double> constReal(Double value) {
+        return new ConstantExpression<>(value, Type.REAL);
     }
 
-    public static class ConstantBooleanExpression extends ConstantExpression<Boolean> {
-        public ConstantBooleanExpression(Boolean value) {
-            super(value);
-        }
-        public Type evalType() {
-            return Type.BOOLEAN;
-        }
-    }
-
-    public static class ConstantIntegerExpression extends ConstantExpression<Integer> {
-        public ConstantIntegerExpression(Integer value) {
-            super(value);
-        }
-        public Type evalType() {
-            return Type.INTEGER;
-        }
-    }
-
-    public static class ConstantRealExpression extends ConstantExpression<Double> {
-        public ConstantRealExpression(Double value) {
-            super(value);
-        }
-        public Type evalType() {
-            return Type.REAL;
-        }
-    }
-
-    public static class ConstantStringExpression extends ConstantExpression<String> {
-        public ConstantStringExpression(String value) {
-            super(value);
-        }
-        public Type evalType() {
-            return Type.STRING;
-        }
+    public static ConstantExpression<String> constString(String value) {
+        return new ConstantExpression<>(value, Type.STRING);
     }
 }

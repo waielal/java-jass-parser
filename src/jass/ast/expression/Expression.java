@@ -1,12 +1,12 @@
 package jass.ast.expression;
 
-import jass.ast.JassInstance;
+import jass.JassPrinter;
 import jass.ast.declaration.Type;
 
-public interface Expression {
-    void checkRequirement(JassInstance instance);
+public abstract class Expression {
+    public Type type;
 
-    Object eval();
-
-    Type evalType();
+    public String toString() {
+        return JassPrinter.print(this);
+    }
 }

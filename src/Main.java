@@ -1,10 +1,10 @@
+import jass.JassEvaluator;
 import jass.JassLexer;
 import jass.JassParser;
-import jass.ast.FunctionRef;
-import jass.ast.JassHelper;
 import jass.ast.JassInstance;
-import jass.ast.NativeFunctionRef.Argument;
-import jass.ast.Type;
+import jass.ast.declaration.NativeFunctionRef;
+import jass.ast.declaration.NativeFunctionRef.Argument;
+import jass.ast.declaration.Type;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 
 public class Main {
     public static void main(String[] args) {
+        test();
         try {
             long start = System.currentTimeMillis();
 
@@ -27,7 +28,6 @@ public class Main {
             start = System.currentTimeMillis();
 
             JassInstance instance = parser.parse(lexer);
-            instance.init();
 
             System.out.println(System.currentTimeMillis() - start);
 
@@ -57,10 +57,9 @@ public class Main {
         JassParser parser = new JassParser();
         JassInstance instance = parser.parse(lexer);
 
-
         NativeFunctionRef refA = instance.functions.get("A");
-        Object res = refA.eval(new Argument(Type.INTEGER, 1), new Argument(Type.INTEGER, 1));
-        System.out.println("(" + refA.returnType() + ") " + res);
+        Object res = JassEvaluator.run(refA, new Argument(Type.INTEGER, 1), new Argument(Type.INTEGER, 1));
+        System.out.println("(" + refA.returnType + ") " + res);
     }
 
     public static String loadFile(String file) throws IOException {

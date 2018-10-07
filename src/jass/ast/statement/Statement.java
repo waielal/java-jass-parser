@@ -1,9 +1,9 @@
 package jass.ast.statement;
 
-import jass.ast.JassInstance;
+import jass.JassPrinter;
 
-public interface Statement {
-    void checkRequirement(JassInstance instance);
-
-    void run();
+public abstract class Statement {
+    public String toString() {
+        return JassPrinter.print(this);
+    }
 }

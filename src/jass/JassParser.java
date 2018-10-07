@@ -1,13 +1,9 @@
 package jass;
 
 import jass.ast.JassInstance;
-import jass.ast.declaration.FunctionRef;
-import jass.ast.declaration.NativeFunctionRef;
-import jass.ast.declaration.Type;
-import jass.ast.declaration.Variable;
+import jass.ast.declaration.*;
 import jass.ast.declaration.Variable.VariableScope;
 import jass.ast.expression.*;
-import jass.ast.expression.ConstantExpression.*;
 import jass.ast.statement.*;
 import jass.ast.statement.ConditionalStatement.Branch;
 
@@ -48,8 +44,8 @@ public class JassParser {
     private boolean declaration(JassLexer lexer) {
         return lexer.hasMore() && (
                 this.typedef(lexer) ||
-                this.globals(lexer) ||
-                this.func(lexer)
+                        this.globals(lexer) ||
+                        this.func(lexer)
         );
     }
 
@@ -77,13 +73,13 @@ public class JassParser {
                 Expression assignExpr = this.expr(lexer);
 
                 Variable var = Variable.createGlobalConst(id, type);
-                var.setAssignExpr(assignExpr);
+                var.assignExpr = assignExpr;
                 instance.globals.put(var.name, var);
-                var.checkRequirement(instance);
+                JassChecker.check(instance, var);
             } else {
                 Variable var = this.var_declaration(lexer, VariableScope.Global);
                 instance.globals.put(var.name, var);
-                var.checkRequirement(instance);
+                JassChecker.check(instance, var);
             }
         }
         return true;
@@ -100,7 +96,7 @@ public class JassParser {
             ret = Variable.createVariable(id, type, scope);
 
             if (lexer.next_is("=")) {
-                ret.setAssignExpr(this.expr(lexer));
+                ret.assignExpr = this.expr(lexer);
             }
         } else {
             ret = Variable.createArray(id, type, scope);
@@ -125,7 +121,7 @@ public class JassParser {
         if (funcType.equals("native")) {
             NativeFunctionRef ref = new NativeFunctionRef(id, args, typeId, is_const);
             instance.functions.put(id, ref);
-            ref.checkRequirement(instance);
+            JassChecker.check(instance, ref);
         } else {
             activeFunctionId = new NativeFunctionRef(id, args, typeId, is_const);
             Variable[] locals = this.local_var_list(lexer);
@@ -138,7 +134,7 @@ public class JassParser {
             Statement[] s = new Statement[statements.size()];
             FunctionRef ref = new FunctionRef(id, args, typeId, is_const, locals, statements.toArray(s));
             instance.functions.put(id, ref);
-            ref.checkRequirement(instance);
+            JassChecker.check(instance, ref);
             activeFunctionId = null;
         }
         return true;
@@ -221,7 +217,7 @@ public class JassParser {
                     break;
                 }
                 case "else": {
-                    Expression expr = new ConstantBooleanExpression(true);
+                    Expression expr = ConstantExpression.constBool(true);
                     branches.add(new Branch(expr, this.statement_list(lexer, "endif")));
                     break;
                 }
@@ -348,7 +344,7 @@ public class JassParser {
                     term = OperationTermExpression.add(term, this.unary_term(lexer));
                     break;
                 case "-":
-                    term = OperationTermExpression.add(term, OperationTermExpression.mul(new ConstantIntegerExpression(-1), this.unary_term(lexer)));
+                    term = OperationTermExpression.add(term, OperationTermExpression.mul(ConstantExpression.constInt(-1), this.unary_term(lexer)));
                     break;
             }
         }
@@ -369,7 +365,7 @@ public class JassParser {
                     break;
                 case "-":
                 default:
-                    term = OperationTermExpression.mul(new ConstantIntegerExpression(-1), this.mul_div_term(lexer));
+                    term = OperationTermExpression.mul(ConstantExpression.constInt(-1), this.mul_div_term(lexer));
                     break;
             }
         } else {
@@ -436,32 +432,32 @@ public class JassParser {
         return null;
     }
 
-    private ConstantNullExpression null_constant(JassLexer lexer) {
+    private ConstantExpression null_constant(JassLexer lexer) {
         if (lexer.next_is("null")) {
-            return new ConstantNullExpression();
+            return ConstantExpression.constNull();
         }
         return null;
     }
 
-    private ConstantIntegerExpression int_constant(JassLexer lexer) {
+    private ConstantExpression int_constant(JassLexer lexer) {
         String s;
 
         if (lexer.match(DEC_REGEX)) {
             s = lexer.next();
-            return new ConstantIntegerExpression(Integer.parseInt(s));
+            return ConstantExpression.constInt(Integer.parseInt(s));
         }
         if (lexer.match(OCT_REGEX)) {
             s = lexer.next();
-            return new ConstantIntegerExpression(Integer.parseInt(s, 8));
+            return ConstantExpression.constInt(Integer.parseInt(s, 8));
         }
         if (lexer.match(HEX_REGEX)) {
             s = lexer.next();
             String r = s.replace("$", "").replace("0X", "").replace("0x", "");
-            return new ConstantIntegerExpression(Integer.parseInt(r, 16));
+            return ConstantExpression.constInt(Integer.parseInt(r, 16));
         }
         if (lexer.match(FOURCC_REGEX)) {
             s = lexer.next();
-            return new ConstantIntegerExpression(
+            return ConstantExpression.constInt(
                     s.charAt(1) | (s.charAt(2) << 8) | (s.charAt(3) << 16) | (s.charAt(4) << 24)
             );
         }
@@ -469,26 +465,26 @@ public class JassParser {
         return null;
     }
 
-    private ConstantRealExpression real_constant(JassLexer lexer) {
+    private ConstantExpression real_constant(JassLexer lexer) {
         if (lexer.match(REAL_REGEX)) {
-            return new ConstantRealExpression(Double.parseDouble(lexer.next()));
+            return ConstantExpression.constReal(Double.parseDouble(lexer.next()));
         }
         return null;
     }
 
-    private ConstantBooleanExpression bool_constant(JassLexer lexer) {
+    private ConstantExpression bool_constant(JassLexer lexer) {
         if (lexer.match("true|false")) {
-            return new ConstantBooleanExpression(lexer.next().equals("true"));
+            return ConstantExpression.constBool(lexer.next().equals("true"));
         }
         return null;
     }
 
-    private ConstantStringExpression string_constant(JassLexer lexer) {
+    private ConstantExpression string_constant(JassLexer lexer) {
         if (lexer.peek().charAt(0) == '"') {
             String val = lexer.next();
             val = val.substring(1, val.length() - 2);
 
-            return new ConstantStringExpression(val);
+            return ConstantExpression.constString(val);
         }
         return null;
     }
