@@ -8,7 +8,6 @@ import jass.ast.declaration.Variable;
 import jass.ast.declaration.Variable.VariableScope;
 import jass.ast.expression.*;
 import jass.ast.statement.*;
-import jass.ast.statement.ConditionalStatement.Branch;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
@@ -57,7 +56,9 @@ public class JassEvaluator {
     }
 
     private static void eval(Statement statement) {
-        if (statement instanceof SetStatement)
+        if (statement instanceof BlockStatement)
+            eval((BlockStatement) statement);
+        else if (statement instanceof SetStatement)
             eval((SetStatement) statement);
         else if (statement instanceof SetArrayStatement)
             eval((SetArrayStatement) statement);
@@ -75,6 +76,12 @@ public class JassEvaluator {
             eval((FunctionCallStatement) statement);
         else
             throw new RuntimeException("Hmm okay... :confused:");
+    }
+
+    private static void eval(BlockStatement statement) {
+        for (Statement s : statement) {
+            eval(s);
+        }
     }
 
     private static void eval(SetStatement statement) {
@@ -97,20 +104,10 @@ public class JassEvaluator {
     }
 
     private static void eval(ConditionalStatement statement) {
-        for (Branch branch : statement.branches) {
-            if ((boolean) eval(branch.expr)) {
-                eval(branch);
-                break;
-            }
-        }
-    }
-
-    private static void eval(Branch branch) {
-        for (Statement statement : branch.statements) {
-            eval(statement);
-
-            if (statement instanceof ReturnStatement)
-                break;
+        if ((boolean) eval(statement.expr)) {
+            eval(statement.thenStatements);
+        } else if (statement.elseStatements != null) {
+            eval(statement.elseStatements);
         }
     }
 

@@ -81,7 +81,9 @@ public class JassChecker {
             ((ReturnStatement) statement).function = (FunctionRef) getFunction(((ReturnStatement) statement).functionId);
         }
 
-        if (statement instanceof SetStatement)
+        if (statement instanceof BlockStatement)
+            checkRequirement((BlockStatement) statement);
+        else if (statement instanceof SetStatement)
             checkRequirement((SetStatement) statement);
         else if (statement instanceof SetArrayStatement)
             checkRequirement((SetArrayStatement) statement);
@@ -99,6 +101,12 @@ public class JassChecker {
             checkRequirement((FunctionCallStatement) statement);
         else
             throw new RuntimeException("Hmm okay... :confused:");
+    }
+
+    private static void checkRequirement(BlockStatement statement) {
+        for (Statement s : statement.statements) {
+            checkRequirement(s);
+        }
     }
 
     private static void checkRequirement(SetStatement statement) {
@@ -157,20 +165,15 @@ public class JassChecker {
     }
 
     private static void checkRequirement(ConditionalStatement statement) {
-        for (ConditionalStatement.Branch branch : statement.branches) {
-            checkRequirement(branch);
-        }
-    }
+        checkRequirement(statement.expr);
 
-    private static void checkRequirement(ConditionalStatement.Branch branch) {
-        checkRequirement(branch.expr);
-
-        if (branch.expr.type != Type.BOOLEAN) {
+        if (statement.expr.type != Type.BOOLEAN) {
             throw new RuntimeException("The provided expr doesn't return a Boolean");
         }
 
-        for (Statement statement : branch.statements) {
-            checkRequirement(statement);
+        checkRequirement(statement.thenStatements);
+        if (statement.elseStatements != null) {
+            checkRequirement(statement.elseStatements);
         }
     }
 

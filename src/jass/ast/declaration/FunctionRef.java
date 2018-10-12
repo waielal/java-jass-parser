@@ -1,14 +1,14 @@
 package jass.ast.declaration;
 
-import jass.ast.statement.Statement;
+import jass.ast.statement.BlockStatement;
 
 public class FunctionRef extends NativeFunctionRef {
     public final Variable[] localVariables;
-    public final Statement[] statements;
+    public final BlockStatement statements;
 
     public Object returnValue = null;
 
-    public FunctionRef(String name, Variable[] argumentVars, String returnTypeId, boolean isConst, Variable[] localVariables, Statement[] statements) {
+    public FunctionRef(String name, Variable[] argumentVars, String returnTypeId, boolean isConst, Variable[] localVariables, BlockStatement statements) {
         super(name, argumentVars, returnTypeId, isConst);
         this.localVariables = localVariables;
         this.statements = statements;

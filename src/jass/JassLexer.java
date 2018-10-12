@@ -72,7 +72,7 @@ public class JassLexer {
         for (int i = 0; i < a.length; i++) {
             int index = a[i].indexOf("//");
             if (index > -1) {
-                a[i] = a[i].substring(0, index);
+                a[i] = a[i].substring(0, index) + "\n";
             }
         }
 

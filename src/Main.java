@@ -38,19 +38,23 @@ public class Main {
 
     public static void test() {
         String content =
-            "function B takes real a returns real " +
-                "return a * a " +
-            "endfunction "+
+            "function B takes real a returns real\n" +
+                "if true then\n"+
+                    "return a * a\n" +
+                "else\n"+
+                    "return a\n" +
+                "endif\n"+
+            "endfunction\n"+
 
-            "function A takes integer a, real b returns real " +
-                "local real c = B(a) + B(b) " +
-                "local integer i " +
-                "set i = 0 " +
-                "loop set c = c + c " +
-                    "set i = i + 1 " +
-                    "exitwhen i > 1 " +
-                "endloop " +
-                "return c " +
+            "function A takes integer a, real b returns real\n" +
+                "local real c = B(a) + B(b)\n" +
+                "local integer i\n" +
+                "set i = 0\n" +
+                "loop set c = c + c\n" +
+                    "set i = i + 1\n" +
+                    "exitwhen i > 1\n" +
+                "endloop\n" +
+                "return c\n" +
             "endfunction";
 
         JassLexer lexer = new JassLexer(content);

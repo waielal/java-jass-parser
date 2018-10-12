@@ -1,9 +1,9 @@
 package jass.ast.statement;
 
 public class LoopStatement extends Statement {
-    public final Statement[] statements;
+    public final BlockStatement statements;
 
-    public LoopStatement(Statement[] statements) {
+    public LoopStatement(BlockStatement statements) {
         this.statements = statements;
     }
 }

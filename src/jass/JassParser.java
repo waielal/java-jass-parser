@@ -5,7 +5,6 @@ import jass.ast.declaration.*;
 import jass.ast.declaration.Variable.VariableScope;
 import jass.ast.expression.*;
 import jass.ast.statement.*;
-import jass.ast.statement.ConditionalStatement.Branch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,14 +124,9 @@ public class JassParser {
         } else {
             activeFunctionId = new NativeFunctionRef(id, args, typeId, is_const);
             Variable[] locals = this.local_var_list(lexer);
-            List<Statement> statements = new ArrayList<>();
-
-            while (!lexer.next_is("endfunction")) {
-                statements.add(this.statement(lexer));
-            }
-
-            Statement[] s = new Statement[statements.size()];
-            FunctionRef ref = new FunctionRef(id, args, typeId, is_const, locals, statements.toArray(s));
+            BlockStatement statements = this.statement_list(lexer, "endfunction");
+            lexer.expect("endfunction");
+            FunctionRef ref = new FunctionRef(id, args, typeId, is_const, locals, statements);
             instance.functions.put(id, ref);
             JassChecker.check(instance, ref);
             activeFunctionId = null;
@@ -156,7 +150,7 @@ public class JassParser {
         if (lexer.next_is("call")) {
             return this.call(lexer);
         }
-        if (lexer.peek().equals("if")) {
+        if (lexer.next_is("if")) {
             return this.conditional(lexer);
         }
         if (lexer.next_is("loop")) {
@@ -202,41 +196,43 @@ public class JassParser {
     }
 
     private ConditionalStatement conditional(JassLexer lexer) {
-        List<Branch> branches = new ArrayList<>();
+        ConditionalStatement root = new ConditionalStatement();
 
+        root.expr = this.expr(lexer);
+        lexer.expect("then");
+        root.thenStatements = this.statement_list(lexer, "else", "elseif", "endif");
+
+        ConditionalStatement nextStatement = root;
         outerLoop:
         while (true) {
-            String next = lexer.next();
-
-            switch (next) {
-                case "if":
-                case "elseif": {
-                    Expression expr = this.expr(lexer);
+            switch (lexer.next()) {
+                case "elseif":
+                    ConditionalStatement cs = new ConditionalStatement();
+                    cs.expr = this.expr(lexer);
                     lexer.expect("then");
-                    branches.add(new Branch(expr, this.statement_list(lexer, "else", "elseif", "endif")));
+                    cs.thenStatements = this.statement_list(lexer, "else", "elseif", "endif");
+                    nextStatement.elseStatements = cs;
+                    nextStatement = cs;
                     break;
-                }
-                case "else": {
-                    Expression expr = ConstantExpression.constBool(true);
-                    branches.add(new Branch(expr, this.statement_list(lexer, "endif")));
-                    break;
-                }
+
+                case "else":
+                    nextStatement.elseStatements = this.statement_list(lexer, "endif");
+                    lexer.expect("endif");
                 case "endif":
                     break outerLoop;
             }
         }
 
-        Branch[] b = new Branch[branches.size()];
-        return new ConditionalStatement(branches.toArray(b));
+        return root;
     }
 
     private LoopStatement loop(JassLexer lexer) {
-        Statement[] s = this.statement_list(lexer, "endloop");
+        BlockStatement s = this.statement_list(lexer, "endloop");
         lexer.expect("endloop");
         return new LoopStatement(s);
     }
 
-    private Statement[] statement_list(JassLexer lexer, String... until) {
+    private BlockStatement statement_list(JassLexer lexer, String... until) {
         List<Statement> statements = new ArrayList<>();
 
         while (!lexer.peek_in(until)) {
@@ -244,7 +240,7 @@ public class JassParser {
         }
 
         Statement[] s = new Statement[statements.size()];
-        return statements.toArray(s);
+        return new BlockStatement(statements.toArray(s));
     }
 
     private ExitWhenStatement exitwhen(JassLexer lexer) {
